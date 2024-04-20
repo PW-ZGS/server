@@ -1,8 +1,9 @@
-from sqlalchemy import Column, String, Integer, Float, DateTime, ForeignKey
+import uuid
+
+from geoalchemy2 import Geometry
+from sqlalchemy import Column, String, Integer, Float, DateTime, ForeignKey, Numeric
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import relationship
-import uuid
-from geoalchemy2 import Geometry
 
 Base = declarative_base()
 
@@ -14,6 +15,7 @@ class UserEntity(Base):
     name = Column(String(50), nullable=False)
     contact = Column(String(50), nullable=False)
 
+
 class OfficeEntity(Base):
     __tablename__ = 'office'
 
@@ -21,17 +23,20 @@ class OfficeEntity(Base):
     name = Column(String(50), nullable=False)
     geo = Column(Geometry('POINT'))
 
+
 class RouteEntity(Base):
     __tablename__ = 'route'
 
     id = Column(String, primary_key=True, default=str(uuid.uuid4()))
     directions_text = Column(String, nullable=False)
-    geo_point = Column(Geometry('POINT'))
+    lattitude = Column(Numeric, nullable=False)
+    longitude = Column(Numeric, nullable=False)
     office_id = Column(String, ForeignKey('office.id'), nullable=False)
     owner_id = Column(String, ForeignKey('user.id'), nullable=False)
 
     office = relationship('OfficeEntity', backref='routes')
     owner = relationship('UserEntity', backref='routes')
+
 
 class DriverRouteEntity(Base):
     __tablename__ = 'driver_route'
@@ -44,6 +49,7 @@ class DriverRouteEntity(Base):
 
     route = relationship('RouteEntity', backref='driver_routes')
 
+
 class PassengerRouteEntity(Base):
     __tablename__ = 'passenger_route'
 
@@ -54,6 +60,7 @@ class PassengerRouteEntity(Base):
     route_id = Column(String, ForeignKey('route.id'))
 
     route = relationship('RouteEntity', backref='passenger_routes')
+
 
 class RouteMatchEntity(Base):
     __tablename__ = 'route_match'
