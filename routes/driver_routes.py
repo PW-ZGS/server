@@ -41,57 +41,58 @@ def create_driver_route_to(route_data: RouteInput):
     driver_route = DriverRouteEntity(start_time=route_data.fromTime,
                                      max_capacity=route_data.availableSeats,
                                      route_id=route.id)
-    engine = create_engine(POSTGRE_CONNECTION)
-    session_maker = sessionmaker(engine)
-    session = session_maker()
-    try:
-        session.add(route)
-        session.commit()
-        session.add(driver_route)
-        session.commit()
-        return JSONResponse(status_code=200, content="Added")
-    except Exception as e:
-        return JSONResponse(status_code=404, content="Not valid data, check if user exists")
-
+    # engine = create_engine(POSTGRE_CONNECTION)
+    # session_maker = sessionmaker(engine)
+    # session = session_maker()
+    # try:
+    #     session.add(route)
+    #     session.commit()
+    #     session.add(driver_route)
+    #     session.commit()
+    #     return JSONResponse(status_code=200, content="Added")
+    # except Exception as e:
+    #     return JSONResponse(status_code=404, content="Not valid data, check if user exists")
+    return JSONResponse(status_code=200,content={"routeId":"a7b51055-d61c-4b3b-9fde-d14d451bc929"})
 
 
 @driver_route.get("/by-users/{userId}", response_model=List[DriverRoute])
-def get_driver_routes_by_user(user_id: str):
-    filtered_routes = []
-    for route in routes.values():
-        if route.userId == user_id or user_id is None:
-            filtered_routes.append(route)
-    return filtered_routes
+def get_driver_routes_by_user(userId: str):
+    # filtered_routes = []
+    # for route in routes.values():
+    #     if route.userId == user_id or user_id is None:
+    #         filtered_routes.append(route)
+    content = [{"routeId":"a7b51055-d61c-4b3b-9fde-d14d451bc929","startPoint":{"latitude":50.2,"longitude":25.2},
+                "endPoint":{"latitude":50.2,"longitude":25.2}}]
+    return JSONResponse(status_code=200,content=content)
 
 
 @driver_route.get("/{route_id}", response_model=DriverRoute)
 def get_driver_route(route_id: str):
-    route = routes.get(route_id)
-    if route is None:
-        return {"detail": f"Driver route with ID {route_id} not found"}, 404
-    return route
+    content = [{"routeId":"a7b51055-d61c-4b3b-9fde-d14d451bc929","startPoint":{"latitude":50.2,"longitude":25.2},
+               "endPoint":{"latitude":50.2,"longitude":25.2}}]
+    return JSONResponse(status_code=200,content=content)
 
 
 @driver_route.delete("/{route_id}", status_code=204)
 def delete_driver_route(route_id: str):
-    if route_id in routes:
-        del routes[route_id]
-    else:
-        return {"detail": f"Driver route with ID {route_id} not found"}, 404
+    pass
+    # return JSONResponse(status_code=204,content="DriverRoute deleted successfully")
 
 
-@driver_route.post("/{route_id}/modify-passenger-count", response_model=BaseModel)
+@driver_route.post("/{route_id}", response_model=BaseModel)
 def modify_passenger_count(route_id: str, body: ModifyPassengerCount = Body(...)):
-    route = routes.get(route_id)
-    if route is None:
-        return {"detail": f"Driver route with ID {route_id} not found"}, 404
-
-    if body.operation == "inc":
-        route.availableSeats += 1
-    elif body.operation == "dec" and route.availableSeats > 0:
-        route.availableSeats -= 1
-    else:
-        return {"detail": "Cannot decrease passenger count below zero"}, 400
-
-    return {"updatedPassengerCount": route.availableSeats}
+    # route = routes.get(route_id)
+    # if route is None:
+    #     return {"detail": f"Driver route with ID {route_id} not found"}, 404
+    #
+    # if body.operation == "inc":
+    #     route.availableSeats += 1
+    # elif body.operation == "dec" and route.availableSeats > 0:
+    #     route.availableSeats -= 1
+    # else:
+    #     return {"detail": "Cannot decrease passenger count below zero"}, 400
+    #
+    # return {"updatedPassengerCount": route.availableSeats}
+    content = {"updatedPassengerCount": 1}
+    return JSONResponse(status_code=200,content=content)
 
