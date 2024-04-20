@@ -1,7 +1,9 @@
-POSTGRE_USER = "postgres"
-POSTGRE_PASSWORD = "docker"
-POSTGRE_PORT = 5432
-POSTGRE_IP = "localhost"
-POSTGRE_DB = "postgres"
+import os
+
+POSTGRE_USER = os.environ.get('POSTGRE_USER')
+POSTGRE_PASSWORD = os.environ.get('POSTGRE_PASSWORD')
+POSTGRE_PORT = os.environ.get('POSTGRE_PORT')
+POSTGRE_IP = os.environ.get('POSTGRE_IP')
+POSTGRE_DB = os.environ.get('POSTGRE_DB')
 POSTGRE_CONNECTION = f'postgresql://{POSTGRE_USER}:{POSTGRE_PASSWORD}@{POSTGRE_IP}:{POSTGRE_PORT}/{POSTGRE_DB}'
 print(POSTGRE_CONNECTION)

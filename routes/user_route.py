@@ -48,11 +48,16 @@ def create_user(user: User = Body(...)):
     content = {"user_id": str(user.id)}
     return JSONResponse(status_code=200, content=content)
 
-@user_router.get("/users/validation", response_model=ValidateUserResponse)
-def validate_user(user_id: UUID):
-    user = users.get(user_id)
+@user_router.get("/validation", response_model=ValidateUserResponse)
+def validate_user(userId: UUID):
+    engine = create_engine(POSTGRE_CONNECTION)
+    sesion_maker = sessionmaker(engine)
+    session = sesion_maker()
+    entity = session.query(UserEntity).filter_by(id=str(userId)).one()
+    content = {"name":entity.name,
+               "contact":entity.contact}
     if user:
-        return user
+        return JSONResponse(status_code=200, content=content)
     else:
         return {"detail": "User not found"}, 404
 
