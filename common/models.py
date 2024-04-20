@@ -21,7 +21,8 @@ class OfficeEntity(Base):
 
     id = Column(String, primary_key=True, default=str(uuid.uuid4()))
     name = Column(String(50), nullable=False)
-    geo = Column(Geometry('POINT'))
+    latitude = Column(Numeric, nullable=False)
+    longitude = Column(Numeric, nullable=False)
 
 
 class RouteEntity(Base):
@@ -29,7 +30,7 @@ class RouteEntity(Base):
 
     id = Column(String, primary_key=True, default=str(uuid.uuid4()))
     directions_text = Column(String, nullable=False)
-    lattitude = Column(Numeric, nullable=False)
+    latitude = Column(Numeric, nullable=False)
     longitude = Column(Numeric, nullable=False)
     office_id = Column(String, ForeignKey('office.id'), nullable=False)
     owner_id = Column(String, ForeignKey('user.id'), nullable=False)

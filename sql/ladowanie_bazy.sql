@@ -11,13 +11,14 @@ CREATE TABLE "user" (
 CREATE TABLE office (
     id UUID PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    geo POINT
+    latitude numeric,
+    longitude numeric,
 );
 
 CREATE TABLE route (
     id UUID PRIMARY KEY,
     directions_text TEXT NOT NULL,
-    lattitude numeric,
+    latitude numeric,
     longitude numeric,
     office_id UUID NOT NULL,
     owner_id UUID NOT NULL,
@@ -52,10 +53,10 @@ CREATE TABLE "match" (
     FOREIGN KEY (passenger_route_id) REFERENCES passenger_route(id)
 );
 
-DROP TABLE matches CASCADE;
-DROP TABLE passenger_routes CASCADE;
-DROP TABLE driver_routes CASCADE;
-DROP TABLE routes CASCADE;
+DROP TABLE "match" CASCADE;
+DROP TABLE passenger_route CASCADE;
+DROP TABLE driver_route CASCADE;
+DROP TABLE route CASCADE;
 DROP TABLE office CASCADE;
 DROP TABLE "user" CASCADE;
 
