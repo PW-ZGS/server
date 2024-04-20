@@ -1,6 +1,5 @@
 import uuid
 
-from geoalchemy2 import Geometry
 from sqlalchemy import Column, String, Integer, Float, DateTime, ForeignKey, Numeric
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import relationship
@@ -11,7 +10,7 @@ Base = declarative_base()
 class UserEntity(Base):
     __tablename__ = 'user'
 
-    id = Column(String, primary_key=True, default=str(uuid.uuid4()))
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     name = Column(String(50), nullable=False)
     contact = Column(String(50), nullable=False)
 
@@ -19,7 +18,7 @@ class UserEntity(Base):
 class OfficeEntity(Base):
     __tablename__ = 'office'
 
-    id = Column(String, primary_key=True, default=str(uuid.uuid4()))
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     name = Column(String(50), nullable=False)
     latitude = Column(Numeric, nullable=False)
     longitude = Column(Numeric, nullable=False)
@@ -28,7 +27,7 @@ class OfficeEntity(Base):
 class RouteEntity(Base):
     __tablename__ = 'route'
 
-    id = Column(String, primary_key=True, default=str(uuid.uuid4()))
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     directions_text = Column(String, nullable=False)
     latitude = Column(Numeric, nullable=False)
     longitude = Column(Numeric, nullable=False)
@@ -42,7 +41,7 @@ class RouteEntity(Base):
 class DriverRouteEntity(Base):
     __tablename__ = 'driver_route'
 
-    id = Column(String, primary_key=True, default=str(uuid.uuid4()))
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     start_time = Column(DateTime, nullable=False)
     max_capacity = Column(Integer, nullable=False)
     passenger_count = Column(Integer, default=0)
@@ -54,7 +53,7 @@ class DriverRouteEntity(Base):
 class PassengerRouteEntity(Base):
     __tablename__ = 'passenger_route'
 
-    id = Column(String, primary_key=True, default=str(uuid.uuid4()))
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     date_from = Column(DateTime)
     date_to = Column(DateTime)
     max_distance = Column(Float)
@@ -66,7 +65,7 @@ class PassengerRouteEntity(Base):
 class RouteMatchEntity(Base):
     __tablename__ = 'route_match'
 
-    id = Column(String, primary_key=True, default=str(uuid.uuid4()))
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     passenger_route_id = Column(String, ForeignKey('passenger_route.id'), nullable=False)
     driver_route_id = Column(String, ForeignKey('driver_route.id'), nullable=False)
 

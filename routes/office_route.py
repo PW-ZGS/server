@@ -1,12 +1,18 @@
-from fastapi import FastAPI
+import json
+
 from pydantic import BaseModel
 
 from .models import Location
 from typing import List
 from fastapi import APIRouter
 from common.models import OfficeEntity
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from common.credentials import POSTGRE_CONNECTION
+from fastapi.responses import JSONResponse
 
 office_router = APIRouter(
+    prefix="/offices",
     tags=["offices"]
 )
 
@@ -18,17 +24,17 @@ class Office(BaseModel):
 @office_router.post("/load_base")
 def load_offices():
     engine = create_engine(POSTGRE_CONNECTION)
-    sesion_maker = sessionmaker(engine)
-    session = sesion_maker()
-    office1 = OfficeEntity(name="Main Office",lattitude=52.196774,longitude=21.017593)
-    office2 = OfficeEntity(name="Branch Office",lattitude=51.107748,longitude=17.068012)
+    session_maker = sessionmaker(engine)
+    session = session_maker()
+    office1 = OfficeEntity(name="Main Office",latitude=52.196774,longitude=21.017593)
+    office2 = OfficeEntity(name="Branch Office",latitude=51.107748,longitude=17.068012)
     try:
         session.add(office1)
         session.add(office2)
         session.commit()
         return JSONResponse(status_code=200, content="loaded")
     except Exception as e:
-        return JSONResponse(status_code=404, content="loaded")
+        return JSONResponse(status_code=404, content="not_loaded")
 
 
 
@@ -41,9 +47,8 @@ def get_offices():
     session_maker = sessionmaker(engine)
     session = session_maker()
     try:
-        entity = session.query(OfficeEntity).all()
-        content = {"name": entity.name,
-                   "contact": entity.contact}
-        return JSONResponse(status_code=200, content=content)
+        entities = session.query(OfficeEntity).all()
+        offices = [{"officeId":str(entity.id), "name": entity.name,"location":{"latitude":float(entity.latitude),"longitude":float(entity.longitude)}} for entity in entities]
+        return JSONResponse(status_code=200, content=json.dumps(offices))
     except Exception as e:
         return JSONResponse(status_code=404, content="User not found")
