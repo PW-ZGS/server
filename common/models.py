@@ -63,7 +63,7 @@ class PassengerRouteEntity(Base):
 
 
 class RouteMatchEntity(Base):
-    __tablename__ = 'route_match'
+    __tablename__ = 'match'
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     passenger_route_id = Column(String, ForeignKey('passenger_route.id'), nullable=False)
