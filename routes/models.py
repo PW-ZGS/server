@@ -27,6 +27,7 @@ class RouteInput(BaseModel):
 
 class PassengerRouteInput(BaseModel):
     officeId: str = Field(description="Unique identifier of the desired starting point (office)")
+    userId: str = Field()
     startPoint: Location = Field(description="Geographic location of the desired starting point")
     timeRange: DateRange = Field(description="Desired time range for the route")
     maxDist: int = Field(gt=0, description="Maximum acceptable distance from the desired starting point")
