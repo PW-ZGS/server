@@ -50,11 +50,11 @@ def validate_user(userId: UUID):
     engine = create_engine(POSTGRE_CONNECTION)
     sesion_maker = sessionmaker(engine)
     session = sesion_maker()
-    entity = session.query(UserEntity).filter_by(id=str(userId)).one()
-    content = {"name":entity.name,
+    try:
+        entity = session.query(UserEntity).filter_by(id=str(userId)).one()
+        content = {"name":entity.name,
                "contact":entity.contact}
-    if user:
         return JSONResponse(status_code=200, content=content)
-    else:
-        return {"detail": "User not found"}, 404
+    except Exception as e:
+        return JSONResponse(status_code=404, content="User not found")
 
