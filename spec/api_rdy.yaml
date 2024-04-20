@@ -339,6 +339,8 @@ paths:
                       type: string
                     name:
                       type: string
+                    link:
+                      type: string
 
 components:
   schemas:
