@@ -31,7 +31,7 @@ class ValidateUserResponse(BaseModel):
     contact: str
 
 
-@user_router.post("/", response_model=CreateUserResponse)
+@user_router.post("", response_model=CreateUserResponse)
 def create_user(user: User = Body(...)):
     engine = create_engine(POSTGRE_CONNECTION)
     sesion_maker = sessionmaker(engine)
