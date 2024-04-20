@@ -34,8 +34,8 @@ class RouteEntity(Base):
     office_id = Column(String, ForeignKey('office.id'), nullable=False)
     owner_id = Column(String, ForeignKey('user.id'), nullable=False)
 
-    office = relationship('OfficeEntity', backref='routes')
-    owner = relationship('UserEntity', backref='routes')
+    office = relationship('OfficeEntity', backref='route')
+    owner = relationship('UserEntity', backref='route')
 
 
 class DriverRouteEntity(Base):
@@ -47,7 +47,7 @@ class DriverRouteEntity(Base):
     passenger_count = Column(Integer, default=0)
     route_id = Column(String, ForeignKey('route.id'))
 
-    route = relationship('RouteEntity', backref='driver_routes')
+    route = relationship('RouteEntity', backref='driver_route')
 
 
 class PassengerRouteEntity(Base):
@@ -59,7 +59,7 @@ class PassengerRouteEntity(Base):
     max_distance = Column(Float)
     route_id = Column(String, ForeignKey('route.id'))
 
-    route = relationship('RouteEntity', backref='passenger_routes')
+    route = relationship('RouteEntity', backref='passenger_route')
 
 
 class RouteMatchEntity(Base):

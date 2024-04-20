@@ -41,58 +41,72 @@ def create_driver_route_to(route_data: RouteInput):
     driver_route = DriverRouteEntity(start_time=route_data.fromTime,
                                      max_capacity=route_data.availableSeats,
                                      route_id=route.id)
-    # engine = create_engine(POSTGRE_CONNECTION)
-    # session_maker = sessionmaker(engine)
-    # session = session_maker()
-    # try:
-    #     session.add(route)
-    #     session.commit()
-    #     session.add(driver_route)
-    #     session.commit()
-    #     return JSONResponse(status_code=200, content="Added")
-    # except Exception as e:
-    #     return JSONResponse(status_code=404, content="Not valid data, check if user exists")
-    return JSONResponse(status_code=200,content={"routeId":"a7b51055-d61c-4b3b-9fde-d14d451bc929"})
+    engine = create_engine(POSTGRE_CONNECTION)
+    session_maker = sessionmaker(engine)
+    session = session_maker()
+    try:
+        session.add(route)
+        session.commit()
+        session.add(driver_route)
+        session.commit()
+        session.close()
+        return JSONResponse(status_code=200, content=route_id)
+    except Exception as e:
+        return JSONResponse(status_code=404, content="Not valid data, check if user exists")
 
 
 @driver_route.get("/by-users/{userId}", response_model=List[DriverRoute])
 def get_driver_routes_by_user(userId: str):
-    # filtered_routes = []
-    # for route in routes.values():
-    #     if route.userId == user_id or user_id is None:
-    #         filtered_routes.append(route)
-    content = [{"routeId":"a7b51055-d61c-4b3b-9fde-d14d451bc929","startPoint":{"latitude":50.2,"longitude":25.2},
-                "endPoint":{"latitude":50.2,"longitude":25.2}}]
-    return JSONResponse(status_code=200,content=content)
+    engine = create_engine(POSTGRE_CONNECTION)
+    session_maker = sessionmaker(engine)
+    session = session_maker()
+    try:
+        filtered_entities = session.query(RouteEntity).filter(RouteEntity.owner_id == userId).all()
+        filtered_entities = [{"routeId":str(entity.id), "startPoint":{"latitude":float(entity.latitude),"longitude":float(entity.longitude)}, "endPoint":{"latitude":float(entity.office.latitude),"longitude":float(entity.office.longitude)}} for entity in filtered_entities]
+        session.close()
+        return JSONResponse(status_code=200, content=filtered_entities)
+    except Exception as e:
+        return JSONResponse(status_code=404, content="Entities not found")
 
 
 @driver_route.get("/{route_id}", response_model=DriverRoute)
 def get_driver_route(route_id: str):
-    content = [{"routeId":"a7b51055-d61c-4b3b-9fde-d14d451bc929","startPoint":{"latitude":50.2,"longitude":25.2},
-               "endPoint":{"latitude":50.2,"longitude":25.2}}]
-    return JSONResponse(status_code=200,content=content)
+    engine = create_engine(POSTGRE_CONNECTION)
+    session_maker = sessionmaker(engine)
+    session = session_maker()
+    try:
+        entity = session.query(RouteEntity).filter(RouteEntity.id == route_id).one()
+        content = {"routeId": str(entity.id),
+                              "startPoint": {"latitude": float(entity.latitude), "longitude": float(entity.longitude)},
+                              "endPoint": {"latitude": float(entity.office.latitude),
+                                           "longitude": float(entity.office.longitude)}}
+        session.close()
+        return JSONResponse(status_code=200, content=content)
+    except Exception as e:
+        return JSONResponse(status_code=404, content="Entities not found")
 
 
 @driver_route.delete("/{route_id}", status_code=204)
 def delete_driver_route(route_id: str):
-    pass
+    engine = create_engine(POSTGRE_CONNECTION)
+    session_maker = sessionmaker(engine)
+    session = session_maker()
+    route_to_delete = session.query(RouteEntity).filter(RouteEntity.id == route_id).one()
+    session.delete(route_to_delete)
+    session.commit()
+    session.close()
     # return JSONResponse(status_code=204,content="DriverRoute deleted successfully")
 
 
 @driver_route.post("/{route_id}", response_model=BaseModel)
 def modify_passenger_count(route_id: str, body: ModifyPassengerCount = Body(...)):
-    # route = routes.get(route_id)
-    # if route is None:
-    #     return {"detail": f"Driver route with ID {route_id} not found"}, 404
-    #
-    # if body.operation == "inc":
-    #     route.availableSeats += 1
-    # elif body.operation == "dec" and route.availableSeats > 0:
-    #     route.availableSeats -= 1
-    # else:
-    #     return {"detail": "Cannot decrease passenger count below zero"}, 400
-    #
-    # return {"updatedPassengerCount": route.availableSeats}
-    content = {"updatedPassengerCount": 1}
+    engine = create_engine(POSTGRE_CONNECTION)
+    session_maker = sessionmaker(engine)
+    session = session_maker()
+    driver_route = session.query(DriverRouteEntity).filter_by(route_id=route_id).get(1)
+    driver_route.passenger_count = driver_route.passenger_count+1
+    content = {"updatedPassengerCount": driver_route.passenger_count}
+    session.commit()
+    session.close()
     return JSONResponse(status_code=200,content=content)
 
