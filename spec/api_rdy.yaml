@@ -75,7 +75,6 @@ paths:
                       description: Name of the office
                     location:
                       $ref: '#/components/schemas/Location'
-#          do wyjebania
   /passengers:
     get:
       summary: Get Waiting Place Information
