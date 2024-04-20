@@ -65,15 +65,21 @@ def create_driver_route_to(route_data: PassengerRouteInput):
 
 @passenger_route_router.get("/{passengerRouteId}", response_model=PassengerRoute)
 def get_passenger_route(passengerRouteId: str):
-    return PassengerRoute(passengerRouteId='rty',
-                          startPoint=Location(latitude=15.34, longitude=57.34),
-                          endPoint=Location(latitude=17.34, longitude=65.34)
-                          )
+    engine = create_engine(POSTGRE_CONNECTION)
+    session_maker = sessionmaker(engine)
+    session = session_maker()
 
-    for (userId, route) in passenger_routes.items():
-        if passengerRouteId == route.passengerRouteId:
-            return route
-    return {"detail": f"Passenger route with ID {passengerRouteId} not found"}, 404
+    try:
+        entity: RouteEntity = session.query(RouteEntity).filter_by(route_id=passengerRouteId).get(1)
+        result = PassengerRoute(passengerRouteId=entity.id,
+                                startPoint=Location(latitude=float(entity.latitude), longitude=float(entity.longitude)),
+                                endPoint=Location(latitude=float(entity.office.latitude),
+                                                  longitude=float(entity.office.longitude))
+                                )
+        session.close()
+        return JSONResponse(status_code=200, content=result)
+    except Exception as e:
+        return JSONResponse(status_code=404, content=f"Passenger route with ID {passengerRouteId} not found")
 
 
 @passenger_route_router.delete("/{passengerRouteId}", status_code=204)
@@ -86,13 +92,18 @@ def delete_passenger_route(passengerRouteId: str):
 
 
 @passenger_route_router.get("/by-users/{user_id}", response_model=List[PassengerRoute])
-def get_passenger_routes_by_user(user_id: str):
-    return [PassengerRoute(passengerRouteId='rty',
-                           startPoint=Location(latitude=15.34, longitude=57.34),
-                           endPoint=Location(latitude=17.34, longitude=65.34)
-                           )]
-    filtered_routes = []
-    for (userId, route) in passenger_routes.items():
-        if userId == user_id:
-            filtered_routes.append(route)
-    return filtered_routes
+def get_passenger_routes_by_user(userId: str):
+    engine = create_engine(POSTGRE_CONNECTION)
+    session_maker = sessionmaker(engine)
+    session = session_maker()
+    try:
+        filtered_entities = session.query(RouteEntity).filter(RouteEntity.owner_id == userId).all()
+        filtered_entities = [{"routeId": str(entity.id),
+                              "startPoint": {"latitude": float(entity.latitude), "longitude": float(entity.longitude)},
+                              "endPoint": {"latitude": float(entity.office.latitude),
+                                           "longitude": float(entity.office.longitude)}} for entity in
+                             filtered_entities]
+        session.close()
+        return JSONResponse(status_code=200, content=filtered_entities)
+    except Exception as e:
+        return JSONResponse(status_code=404, content="Entities not found")
