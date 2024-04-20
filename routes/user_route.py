@@ -42,7 +42,7 @@ def create_user(user: User = Body(...)):
         session.commit()
     except Exception as e:
         print(e)
-    content = {"user_id": str(user.id)}
+    content = {"userId": str(user.id)}
     return JSONResponse(status_code=200, content=content)
 
 @user_router.get("/validation", response_model=ValidateUserResponse)
@@ -53,7 +53,7 @@ def validate_user(userId: UUID):
     try:
         entity = session.query(UserEntity).filter_by(id=str(userId)).one()
         content = {"name":entity.name,
-               "contact":entity.contact}
+                    "contact":entity.contact}
         return JSONResponse(status_code=200, content=content)
     except Exception as e:
         return JSONResponse(status_code=404, content="User not found")
