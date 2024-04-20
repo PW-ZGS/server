@@ -11,7 +11,7 @@ from common.models import UserEntity
 from fastapi.responses import JSONResponse
 
 user_router = APIRouter(
-    prefix="/user",
+    prefix="/users",
     tags=["user"]
 )
 

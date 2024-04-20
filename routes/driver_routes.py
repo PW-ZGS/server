@@ -3,7 +3,12 @@ from typing import List
 
 from fastapi import Body, APIRouter
 from pydantic import BaseModel, Field
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from starlette.responses import JSONResponse
 
+from common.credentials import POSTGRE_CONNECTION
+from common.models import RouteEntity, DriverRouteEntity
 from .models import RouteInput, DriverRoute
 
 routes: dict[str, DriverRoute] = {}
@@ -17,26 +22,37 @@ class ModifyPassengerCount(BaseModel):
     operation: str = Field(..., description="Operation to perform (inc or dec)")
 
 
-driver_route_router = APIRouter(
+driver_route = APIRouter(
     prefix="/driver_routes",
     tags=["driver_routes"]
 )
 
 
-@driver_route_router.post("/to", response_model=CreateRouteResponse)
+@driver_route.post("/to")
 def create_driver_route_to(route_data: RouteInput):
-    route_id = str(uuid.uuid4())
-    route = DriverRoute(
-        routeId=route_id,
-        startPoint=None,
-        endPoint=route_data.startPoint,
-        **route_data.dict(exclude_unset=True),
-    )
-    routes[route_id] = route
-    return CreateRouteResponse(routeId=route_id)
+    route = RouteEntity(
+                directions_text="-1",
+                latitude=route_data.startPoint.latitude,
+                longitude=route_data.startPoint.longitude,
+                office_id=route_data.officeId,
+                owner_id=route_data.userId)
+    driver_route = DriverRouteEntity(start_time=route_data.fromTime,
+                                     max_capacity=route_data.availableSeats,
+                                     route_id=route.id)
+    engine = create_engine(POSTGRE_CONNECTION)
+    session_maker = sessionmaker(engine)
+    session = session_maker()
+    try:
+        session.add(route)
+        session.add(driver_route)
+        session.commit()
+        return JSONResponse(status_code=200, content="loaded")
+    except Exception as e:
+        return JSONResponse(status_code=404, content="not_loaded")
 
 
-@driver_route_router.get("/by-users/{userId}", response_model=List[DriverRoute])
+
+@driver_route.get("/by-users/{userId}", response_model=List[DriverRoute])
 def get_driver_routes_by_user(user_id: str):
     filtered_routes = []
     for route in routes.values():
@@ -45,7 +61,7 @@ def get_driver_routes_by_user(user_id: str):
     return filtered_routes
 
 
-@driver_route_router.get("/{route_id}", response_model=DriverRoute)
+@driver_route.get("/{route_id}", response_model=DriverRoute)
 def get_driver_route(route_id: str):
     route = routes.get(route_id)
     if route is None:
@@ -53,7 +69,7 @@ def get_driver_route(route_id: str):
     return route
 
 
-@driver_route_router.delete("/{route_id}", status_code=204)
+@driver_route.delete("/{route_id}", status_code=204)
 def delete_driver_route(route_id: str):
     if route_id in routes:
         del routes[route_id]
@@ -61,7 +77,7 @@ def delete_driver_route(route_id: str):
         return {"detail": f"Driver route with ID {route_id} not found"}, 404
 
 
-@driver_route_router.post("/{route_id}/modify-passenger-count", response_model=BaseModel)
+@driver_route.post("/{route_id}/modify-passenger-count", response_model=BaseModel)
 def modify_passenger_count(route_id: str, body: ModifyPassengerCount = Body(...)):
     route = routes.get(route_id)
     if route is None:
