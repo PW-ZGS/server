@@ -21,7 +21,7 @@ class RouteInput(BaseModel):
     officeId: str = Field(description="Unique identifier of the starting point (office)")
     startPoint: Location = Field(description="Geographic location of the starting point")
     fromTime: str = Field(description="Scheduled departure time")
-    availableSeats: int = Field(gt=0, description="Number of available seats")
+    availableSeats: int = Field(description="Number of available seats")
     userId: str = Field(description="Unique identifier of the user creating the route")
 
 

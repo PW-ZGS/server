@@ -49,6 +49,6 @@ def get_offices():
     try:
         entities = session.query(OfficeEntity).all()
         offices = [{"officeId":str(entity.id), "name": entity.name,"location":{"latitude":float(entity.latitude),"longitude":float(entity.longitude)}} for entity in entities]
-        return JSONResponse(status_code=200, content=json.dumps(offices))
+        return JSONResponse(status_code=200, content=offices)
     except Exception as e:
         return JSONResponse(status_code=404, content="User not found")

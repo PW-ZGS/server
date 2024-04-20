@@ -30,7 +30,9 @@ driver_route = APIRouter(
 
 @driver_route.post("/to")
 def create_driver_route_to(route_data: RouteInput):
+    route_id = uuid.uuid4()
     route = RouteEntity(
+                id = route_id,
                 directions_text="-1",
                 latitude=route_data.startPoint.latitude,
                 longitude=route_data.startPoint.longitude,
@@ -44,11 +46,12 @@ def create_driver_route_to(route_data: RouteInput):
     session = session_maker()
     try:
         session.add(route)
+        session.commit()
         session.add(driver_route)
         session.commit()
-        return JSONResponse(status_code=200, content="loaded")
+        return JSONResponse(status_code=200, content="Added")
     except Exception as e:
-        return JSONResponse(status_code=404, content="not_loaded")
+        return JSONResponse(status_code=404, content="Not valid data, check if user exists")
 
 
 
