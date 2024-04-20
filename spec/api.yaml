@@ -1,0 +1,60 @@
+openapi: 3.0.3
+info:
+  title: Title
+  description: Title
+  version: 1.0.0
+servers:
+  - url: 'https'
+paths:
+
+
+#/users/
+
+#POST account = imie + kontakt -> baza generuje hash + zapamiętuje go w systemie -> zwraca go 
+
+#GET walidacja body =  hash -> kontakt + hash
+
+#/office
+#
+#biura są tworzone przez admina
+#
+#GET pozycja biur -> id-biura + nazwa + geo (qth)
+
+/passangers/
+#
+#GET pobierz swoje miejsce czekania by email/tel + hash 
+
+#unused
+#GET pobieranie passengerów, którzy zgłaszają chęć jazdy na daną trasę i pasują
+
+/routes
+
+#POST dodaj from (id_biura, gdzie chcę GEO, godzina wyjazdu, liczba miejsc) -> id_trasy 
+#
+#POST dodaj to (gdzie chcę GEO, id_biura , godzina wyjazdu, liczba miejsc) -> id_trasy
+  
+#GET pobieranie wszystkich tras by hash kierowcy
+
+GET pobranie trasy (input = skąd limit miejsca)
+  
+#DELETE usuwanie danego route-a
+  
+#POST modyfikacja liczby pasażerów (inc,dec) +/-
+  
+/desires
+
+#POST dodaj from (id_biura, gdzie chcę GEO, zakres godzin, max_dist) -> desire_id
+#
+#POST dodaj to (gdzie chcę GEO, id_biura , zakres godzin, max_dist) -> desire_id
+
+GET pobranie trasy (input = skąd limit miejsca)
+
+#DELETE danego desire-a
+
+#przy max trasa znika
+
+#/matches
+#
+#robie matche na bazie
+#
+#GET pobranie matchy by id_trasy -> desire_id + contact + name

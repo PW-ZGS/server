@@ -1,0 +1,403 @@
+openapi: 3.0.3
+info:
+  title: Taxi App API Specification
+  description: This specification defines the API interfaces for a Taxi application, allowing users to create accounts, drivers to report ride requests, passengers to request rides, manage offices, create routes, and match users to routes.
+  version: 1.0.0
+paths:
+  /users:
+    post:
+      summary: Create User Account
+      description: Creates a user account, storing the name, contact, and generating a hash. Returns the hash.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                contact:
+                  type: string
+      responses:
+        '200':
+          description: Account creation confirmation and hash
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  hash:
+                    type: string
+  /users/validation/:
+    get:
+      summary: Validate User
+      description: Verifies the user based on the hash and returns the contact and hash.
+      parameters:
+        - name: hash
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Validation confirmation and user data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  contact:
+                    type: string
+                  hash:
+                    type: string
+  /offices:
+    get:
+      summary: Get List of Offices
+      description: Retrieves a list of offices with ID, name, and location (geo).
+      responses:
+        '200':
+          description: List of offices
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    officeId:
+                      type: string
+                      description: Unique identifier of the office
+                    name:
+                      type: string
+                      description: Name of the office
+                    location:
+                      $ref: '#/components/schemas/Location'
+  /passengers:
+    get:
+      summary: Get Waiting Place Information
+      description: Retrieves information about the passenger's waiting place, including location and estimated waiting time.
+      parameters:
+        - name: contact
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: hash
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Waiting place information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  location:
+                    $ref: '#/components/schemas/Location'
+
+  /routes/from:
+    post:
+      summary: Create Route (From)
+      description: Creates a new route with a starting point (office) and specified details.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RouteInput'
+      responses:
+        '200':
+          description: Route created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  routeId:
+                    type: string
+  /routes/to:
+    post:
+      summary: Create Route (To)
+      description: Creates a new route with an ending point (office) and specified details.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RouteInput'
+      responses:
+        '200':
+          description: Route created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  routeId:
+                    type: string
+
+  /routes/by-users/{hash}:
+    get:
+      summary: Get Driver's Routes
+      description: Retrieves a list of routes reported by the driver, with optional filtering by hash.
+      parameters:
+        - name: hash
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of driver's routes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Route'
+
+  /routes/{routeId}:
+    get:
+      summary: Get Route
+      description: Retrieves a route
+      parameters:
+        - name: routeId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Route
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Route'
+
+    delete:
+      summary: Delete Route
+      description: Deletes the specified route.
+      parameters:
+        - name: routeId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Route deleted successfully
+    post:
+      summary: Modify Passenger Count
+      parameters:
+        - name: routeId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                operation:
+                  type: string
+                  enum:
+                    - inc
+                    - dec
+      responses:
+        '200':
+          description: Passenger count modified successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  updatedPassengerCount:
+                    type: integer
+
+  /desires/from:
+    post:
+      summary: Create Desire (From)
+      description: Creates a new desire with a starting point (office) and specified details.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DesireInput'
+      responses:
+        '200':
+          description: Desire created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  desireId:
+                    type: string
+  /desires/to:
+    post:
+      summary: Create Desire (To)
+      description: Creates a new desire with an ending point (office) and specified details.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DesireInput'
+      responses:
+        '200':
+          description: Desire created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  desireId:
+                    type: string
+  /desires/{desireId}:
+    delete:
+      summary: Delete Route
+      description: Deletes the specified route.
+      parameters:
+        - name: desireId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Route deleted successfully
+    get:
+      summary: Get Desire
+      description: Retrieves a desire
+      parameters:
+        - name: desireId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Route
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Desire'
+
+  /desires/by-users/{hash}:
+    get:
+      summary: Get Driver's Desires
+      description: Retrieves a list of desires reported by the driver, with optional filtering by hash.
+      parameters:
+        - name: hash
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of driver's desires
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Desire'
+
+  /matches:
+    get:
+      summary: Get Matches by Route ID
+      description: Retrieves a list of matches for a given route ID.
+      parameters:
+        - name: routeId
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of matches for the route
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    desireId:
+                      type: string
+                    contact:
+                      type: string
+                    name:
+                      type: string
+
+components:
+  schemas:
+    RouteInput:
+      type: object
+      properties:
+        officeId:
+          type: string
+        endPoint:
+          $ref: '#/components/schemas/Location'
+        fromTime:
+          type: string
+          format: date-time
+        availableSeats:
+          type: integer
+    DesireInput:
+      type: object
+      properties:
+        officeId:
+          type: string
+        startPoint:
+          $ref: '#/components/schemas/Location'
+        timeRange:
+          $ref: '#/components/schemas/DateRange'
+        maxDist:
+          type: integer
+    Route:
+      type: object
+      properties:
+        routeId:
+          type: string
+        startPoint:
+          $ref: '#/components/schemas/Location'
+        endPoint:
+          $ref: '#/components/schemas/Location'
+    Desire:
+      type: object
+      properties:
+        desireId:
+          type: string
+        startPoint:
+          $ref: '#/components/schemas/Location'
+        endPoint:
+          $ref: '#/components/schemas/Location'
+    Location:
+      type: object
+      description: Geographic location
+      properties:
+        latitude:
+          type: number
+          description: Latitude coordinate
+        longitude:
+          type: number
+          description: Longitude coordinate
+    DateRange:
+      type: object
+      properties:
+        startDate:
+          type: integer
+          format: int64
+        endDate:
+          type: integer
+          format: int64
+
