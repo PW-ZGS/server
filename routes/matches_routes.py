@@ -38,8 +38,8 @@ def convert_route_match_to_match(route_match: RouteMatchEntity) -> Match:
 def get_matches_by_route(passengerRouteId: str):
 
     return [
-        Match(passengerRouteId='nvdivnw3u', contact='ajajaj@gmail.com', name='Simon', link='https://www.openstreetmap.org/#map=14/52.2302/21.0005'),
-        Match(passengerRouteId='ndsadvdivnw3u', contact='ajajaj2@gmail.com', name='Simon2', link='https://www.openstreetmap.org/#map=14/52.2302/21.0005')
+        Match(passengerRouteId='nvdivnw3u', contact='ajajaj@gmail.com', name='Simon', link='http://18.199.107.206:30490/html/map.html'),
+        Match(passengerRouteId='ndsadvdivnw3u', contact='ajajaj2@gmail.com', name='Simon2', link='http://18.199.107.206:30490/html/map.html')
     ]
 
     engine = create_engine(POSTGRE_CONNECTION)
