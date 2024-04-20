@@ -7,7 +7,7 @@ paths:
   /users:
     post:
       summary: Create User Account
-      description: Creates a user account, storing the name, contact, and generating a hash. Returns the hash.
+      description: Creates a user account, storing the name, contact, and generating a userId. Returns the userId.
       requestBody:
         required: true
         content:
@@ -21,20 +21,20 @@ paths:
                   type: string
       responses:
         '200':
-          description: Account creation confirmation and hash
+          description: Account creation confirmation and userId
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  hash:
+                  userId:
                     type: string
-  /users/validation/:
+  /users/validation:
     get:
       summary: Validate User
-      description: Verifies the user based on the hash and returns the contact and hash.
+      description: Verifies the user based on the userId and returns the contact and userId.
       parameters:
-        - name: hash
+        - name: userId
           in: query
           required: true
           schema:
@@ -47,10 +47,12 @@ paths:
               schema:
                 type: object
                 properties:
+                  name:
+                    type: string
                   contact:
                     type: string
-                  hash:
-                    type: string
+        '404':
+          description: Not found
   /offices:
     get:
       summary: Get List of Offices
@@ -73,6 +75,7 @@ paths:
                       description: Name of the office
                     location:
                       $ref: '#/components/schemas/Location'
+#          do wyjebania
   /passengers:
     get:
       summary: Get Waiting Place Information
@@ -83,7 +86,7 @@ paths:
           required: true
           schema:
             type: string
-        - name: hash
+        - name: userId
           in: query
           required: true
           schema:
@@ -99,9 +102,9 @@ paths:
                   location:
                     $ref: '#/components/schemas/Location'
 
-  /routes/from:
+  /driver_routes/from:
     post:
-      summary: Create Route (From)
+      summary: Create DriverRoute (From)
       description: Creates a new route with a starting point (office) and specified details.
       requestBody:
         required: true
@@ -111,7 +114,7 @@ paths:
               $ref: '#/components/schemas/RouteInput'
       responses:
         '200':
-          description: Route created successfully
+          description: DriverRoute created successfully
           content:
             application/json:
               schema:
@@ -119,9 +122,9 @@ paths:
                 properties:
                   routeId:
                     type: string
-  /routes/to:
+  /driver_routes/to:
     post:
-      summary: Create Route (To)
+      summary: Create DriverRoute (To)
       description: Creates a new route with an ending point (office) and specified details.
       requestBody:
         required: true
@@ -131,7 +134,7 @@ paths:
               $ref: '#/components/schemas/RouteInput'
       responses:
         '200':
-          description: Route created successfully
+          description: DriverRoute created successfully
           content:
             application/json:
               schema:
@@ -140,12 +143,12 @@ paths:
                   routeId:
                     type: string
 
-  /routes/by-users/{hash}:
+  /driver_routes/by-users/{userId}:
     get:
       summary: Get Driver's Routes
-      description: Retrieves a list of routes reported by the driver, with optional filtering by hash.
+      description: Retrieves a list of routes reported by the driver, with optional filtering by userId.
       parameters:
-        - name: hash
+        - name: userId
           in: path
           required: true
           schema:
@@ -158,11 +161,11 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Route'
+                  $ref: '#/components/schemas/DriverRoute'
 
-  /routes/{routeId}:
+  /driver_routes/{routeId}:
     get:
-      summary: Get Route
+      summary: Get DriverRoute
       description: Retrieves a route
       parameters:
         - name: routeId
@@ -172,14 +175,14 @@ paths:
             type: string
       responses:
         '200':
-          description: Route
+          description: DriverRoute
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Route'
+                $ref: '#/components/schemas/DriverRoute'
 
     delete:
-      summary: Delete Route
+      summary: Delete DriverRoute
       description: Deletes the specified route.
       parameters:
         - name: routeId
@@ -189,7 +192,7 @@ paths:
             type: string
       responses:
         '204':
-          description: Route deleted successfully
+          description: DriverRoute deleted successfully
     post:
       summary: Modify Passenger Count
       parameters:
@@ -221,82 +224,82 @@ paths:
                   updatedPassengerCount:
                     type: integer
 
-  /desires/from:
+  /passenger_routes/from:
     post:
-      summary: Create Desire (From)
+      summary: Create PassengerRoute (From)
       description: Creates a new desire with a starting point (office) and specified details.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DesireInput'
+              $ref: '#/components/schemas/PassengerRouteInput'
       responses:
         '200':
-          description: Desire created successfully
+          description: PassengerRoute created successfully
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  desireId:
+                  passengerRouteId:
                     type: string
-  /desires/to:
+  /passenger_routes/to:
     post:
-      summary: Create Desire (To)
+      summary: Create PassengerRoute (To)
       description: Creates a new desire with an ending point (office) and specified details.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DesireInput'
+              $ref: '#/components/schemas/PassengerRouteInput'
       responses:
         '200':
-          description: Desire created successfully
+          description: PassengerRoute created successfully
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  desireId:
+                  passengerRouteId:
                     type: string
-  /desires/{desireId}:
+  /passenger_routes/{passengerRouteId}:
     delete:
-      summary: Delete Route
+      summary: Delete DriverRoute
       description: Deletes the specified route.
       parameters:
-        - name: desireId
+        - name: passengerRouteId
           in: path
           required: true
           schema:
             type: string
       responses:
         '204':
-          description: Route deleted successfully
+          description: DriverRoute deleted successfully
     get:
-      summary: Get Desire
+      summary: Get PassengerRoute
       description: Retrieves a desire
       parameters:
-        - name: desireId
+        - name: passengerRouteId
           in: path
           required: true
           schema:
             type: string
       responses:
         '200':
-          description: Route
+          description: DriverRoute
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Desire'
+                $ref: '#/components/schemas/PassengerRoute'
 
-  /desires/by-users/{hash}:
+  /passenger_routes/by-users/{userId}:
     get:
-      summary: Get Driver's Desires
-      description: Retrieves a list of desires reported by the driver, with optional filtering by hash.
+      summary: Get Driver's PassengerRoutes
+      description: Retrieves a list of desires reported by the driver, with optional filtering by userId.
       parameters:
-        - name: hash
+        - name: userId
           in: path
           required: true
           schema:
@@ -309,14 +312,14 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Desire'
+                  $ref: '#/components/schemas/PassengerRoute'
 
   /matches:
     get:
-      summary: Get Matches by Route ID
+      summary: Get Matches by DriverRoute ID
       description: Retrieves a list of matches for a given route ID.
       parameters:
-        - name: routeId
+        - name: passengerRouteId
           in: query
           required: true
           schema:
@@ -331,7 +334,7 @@ paths:
                 items:
                   type: object
                   properties:
-                    desireId:
+                    passengerRouteId:
                       type: string
                     contact:
                       type: string
@@ -345,14 +348,16 @@ components:
       properties:
         officeId:
           type: string
-        endPoint:
+        startPoint:
           $ref: '#/components/schemas/Location'
         fromTime:
           type: string
           format: date-time
         availableSeats:
           type: integer
-    DesireInput:
+        userId:
+          type: string
+    PassengerRouteInput:
       type: object
       properties:
         officeId:
@@ -363,7 +368,7 @@ components:
           $ref: '#/components/schemas/DateRange'
         maxDist:
           type: integer
-    Route:
+    DriverRoute:
       type: object
       properties:
         routeId:
@@ -372,10 +377,10 @@ components:
           $ref: '#/components/schemas/Location'
         endPoint:
           $ref: '#/components/schemas/Location'
-    Desire:
+    PassengerRoute:
       type: object
       properties:
-        desireId:
+        passengerRouteId:
           type: string
         startPoint:
           $ref: '#/components/schemas/Location'
