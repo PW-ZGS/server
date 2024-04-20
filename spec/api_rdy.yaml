@@ -369,6 +369,8 @@ components:
           $ref: '#/components/schemas/DateRange'
         maxDist:
           type: integer
+        userId:
+          type: string
     DriverRoute:
       type: object
       properties:
