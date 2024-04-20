@@ -17,7 +17,8 @@ CREATE TABLE office (
 CREATE TABLE route (
     id UUID PRIMARY KEY,
     directions_text TEXT NOT NULL,
-    geo_point POINT,
+    lattitude numeric,
+    longitude numeric,
     office_id UUID NOT NULL,
     owner_id UUID NOT NULL,
     FOREIGN KEY (office_id) REFERENCES office(id),
@@ -47,7 +48,7 @@ CREATE TABLE "match" (
     id UUID PRIMARY KEY,
     passenger_route_id UUID NOT NULL,
     driver_route_id UUID NOT NULL,
-    FOREIGN KEY (driver_routes_id) REFERENCES driver_route(id),
+    FOREIGN KEY (driver_route_id) REFERENCES driver_route(id),
     FOREIGN KEY (passenger_route_id) REFERENCES passenger_route(id)
 );
 

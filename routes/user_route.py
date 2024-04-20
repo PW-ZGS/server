@@ -31,9 +31,6 @@ class ValidateUserResponse(BaseModel):
     contact: str
 
 
-users = {}  # In-memory user storage (replace with database)
-
-
 @user_router.post("/", response_model=CreateUserResponse)
 def create_user(user: User = Body(...)):
     engine = create_engine(POSTGRE_CONNECTION)
