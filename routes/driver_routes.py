@@ -50,7 +50,8 @@ def create_driver_route_to(route_data: RouteInput):
         session.add(driver_route)
         session.commit()
         session.close()
-        return JSONResponse(status_code=200, content=route_id)
+        content = {"routeId": str(route_id)}
+        return JSONResponse(status_code=200, content=content)
     except Exception as e:
         return JSONResponse(status_code=404, content="Not valid data, check if user exists")
 
