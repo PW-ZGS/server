@@ -115,37 +115,39 @@ class GeoPassengerRoute:
 
 
 if __name__ == "__main__":
-    passenger_id = "b0e2eb8f-b2be-4266-947e-2757f21b62c3"
     engine = create_engine(POSTGRE_CONNECTION)
     session_maker = sessionmaker(engine)
     session = session_maker()
-    passanger = [join_part for join_part in session.query(PassengerRouteEntity, RouteEntity).join(RouteEntity).filter(PassengerRouteEntity.id == passenger_id).first()]
-    geo_passenger = GeoPassengerRoute(passenger_id=str(passanger[0].id),
-                                      route_id=str(passanger[0].route_id),
-                                      latitude=float(passanger[1].latitude),
-                                      longitude=float(passanger[1].longitude),
-                                      max_distance=passanger[0].max_distance)
-    driver_routes = []
-    for single_join in session.query(DriverRouteEntity, RouteEntity).join(RouteEntity).filter(RouteEntity.office_id == passanger[1].office.id).all():
-        join = [join_part for join_part in single_join]
-        geo_driver = GeoDriverRoute(driver_id=str(join[0].id),
-                                       route_id=str(join[0].route_id),
-                                       latitude=float(join[1].latitude),
-                                       longitude=float(join[1].longitude),
-                                       office_latitude=join[1].office.latitude,
-                                       office_longitude=join[1].office.longitude)
-        driver_routes.append(geo_driver)
 
-    for driver_route in driver_routes:
-        passenger_start = [float(geo_passenger.latitude),float(geo_passenger.longitude)]
-        driver_start = [float(driver_route.latitude), float(driver_route.longitude)]
-        range = geo_passenger.max_distance
-        destination = [float(driver_route.office_latitude),float(driver_route.office_longitude)]
-        router = PyRouter(passenger_start, range, driver_start, destination)
-        car_path = router.getRoute()
-        marker = router.findClosestMarker(car_path)
+    passangers_results = session.query(PassengerRouteEntity, RouteEntity).join(RouteEntity).all()
+    for passenger_result in passangers_results:
+        passanger = [join_part for join_part in passenger_result]
+        geo_passenger = GeoPassengerRoute(passenger_id=str(passanger[0].id),
+                                          route_id=str(passanger[0].route_id),
+                                          latitude=float(passanger[1].latitude),
+                                          longitude=float(passanger[1].longitude),
+                                          max_distance=passanger[0].max_distance)
+        driver_routes = []
+        for single_join in session.query(DriverRouteEntity, RouteEntity).join(RouteEntity).filter(RouteEntity.office_id == passanger[1].office.id).all():
+            join = [join_part for join_part in single_join]
+            geo_driver = GeoDriverRoute(driver_id=str(join[0].id),
+                                           route_id=str(join[0].route_id),
+                                           latitude=float(join[1].latitude),
+                                           longitude=float(join[1].longitude),
+                                           office_latitude=join[1].office.latitude,
+                                           office_longitude=join[1].office.longitude)
+            driver_routes.append(geo_driver)
 
-        if router.isInRange():
-            router.getNearestROIs()
-            router.prepareHTMLmap(car_path)
+        for driver_route in driver_routes:
+            passenger_start = [float(geo_passenger.latitude),float(geo_passenger.longitude)]
+            driver_start = [float(driver_route.latitude), float(driver_route.longitude)]
+            range = geo_passenger.max_distance
+            destination = [float(driver_route.office_latitude),float(driver_route.office_longitude)]
+            router = PyRouter(passenger_start, range, driver_start, destination)
+            car_path = router.getRoute()
+            marker = router.findClosestMarker(car_path)
+
+            if router.isInRange():
+                router.getNearestROIs()
+                router.prepareHTMLmap(car_path)
 
