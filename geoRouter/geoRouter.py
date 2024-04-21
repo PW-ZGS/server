@@ -93,7 +93,7 @@ class PyRouter:
         folium.Marker(self.closest_marker_coords, icon=folium.Icon(color='black'),
                       tooltip=f"Suggested pickup point: {self.closestROIs[0]}", ).add_to(m)
 
-        m.save(f'html/{file_name}.html')
+        m.save(f'html/{file_name}.html',close_file=True)
 
 @dataclass
 class GeoDriverRoute:
