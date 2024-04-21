@@ -70,16 +70,16 @@ def get_passenger_route(passengerRouteId: str):
     session = session_maker()
 
     try:
-        entity: RouteEntity = session.query(RouteEntity).filter_by(route_id=passengerRouteId).get(1)
-        result = PassengerRoute(passengerRouteId=entity.id,
+        entity: RouteEntity = session.query(RouteEntity).filter(RouteEntity.id == passengerRouteId).one()
+        result = PassengerRoute(passengerRouteId=str(entity.id),
                                 startPoint=Location(latitude=float(entity.latitude), longitude=float(entity.longitude)),
                                 endPoint=Location(latitude=float(entity.office.latitude),
                                                   longitude=float(entity.office.longitude))
                                 )
         session.close()
-        return JSONResponse(status_code=200, content=result)
+        return result
     except Exception as e:
-        return JSONResponse(status_code=404, content=f"Passenger route with ID {passengerRouteId} not found")
+        return JSONResponse(status_code=404, content=f"Exception has occured {e}")
 
 
 @passenger_route_router.delete("/{passengerRouteId}", status_code=204)
@@ -91,19 +91,19 @@ def delete_passenger_route(passengerRouteId: str):
     return DeleteResponse()
 
 
-@passenger_route_router.get("/by-users/{user_id}", response_model=List[PassengerRoute])
+@passenger_route_router.get("/by-users/{userId}", response_model=List[PassengerRoute])
 def get_passenger_routes_by_user(userId: str):
     engine = create_engine(POSTGRE_CONNECTION)
     session_maker = sessionmaker(engine)
     session = session_maker()
     try:
         filtered_entities = session.query(RouteEntity).filter(RouteEntity.owner_id == userId).all()
-        filtered_entities = [{"routeId": str(entity.id),
+        filtered_entities = [{"passengerRouteId": str(entity.id),
                               "startPoint": {"latitude": float(entity.latitude), "longitude": float(entity.longitude)},
                               "endPoint": {"latitude": float(entity.office.latitude),
                                            "longitude": float(entity.office.longitude)}} for entity in
                              filtered_entities]
         session.close()
-        return JSONResponse(status_code=200, content=filtered_entities)
+        return filtered_entities
     except Exception as e:
-        return JSONResponse(status_code=404, content="Entities not found")
+        return JSONResponse(status_code=404, content=f"Exception has occured {e}")
