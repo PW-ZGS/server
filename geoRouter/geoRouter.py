@@ -127,7 +127,6 @@ def schedule():
     table_name = "match"
     table = metadata.tables[table_name]
     session.execute(table.delete())
-    session.commit()
     for passenger_result in passangers_results:
         passanger = [join_part for join_part in passenger_result]
         geo_passenger = GeoPassengerRoute(passenger_id=str(passanger[0].id),
@@ -160,11 +159,12 @@ def schedule():
                 match = RouteMatchEntity(passenger_route_id=geo_passenger.passenger_id,
                                          driver_route_id = driver_route.driver_id)
                 session.add(match)
-                session.commit()
                 router.getNearestROIs()
                 router.prepareHTMLmap(car_path,file_name=match.id)
             else:
                 print("no match")
+    session.commit()
+
 
 if __name__ == "__main__":
     schedule()
