@@ -12,7 +12,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from common.credentials import POSTGRE_CONNECTION
-from common.models import PassengerRouteEntity, DriverRouteEntity, RouteEntity
+from common.models import PassengerRouteEntity, DriverRouteEntity, RouteEntity, RouteMatchEntity
 
 
 def openMapForDebug(path, map):
@@ -73,7 +73,7 @@ class PyRouter:
 
         return self.closestROIs
 
-    def prepareHTMLmap(self, route):
+    def prepareHTMLmap(self, route, file_name = "map"):
         map_center = [mean(x) for x in zip(self.driver_point, self.end_point)]
         m = folium.Map(location=list(map_center), zoom_start=13)
 
@@ -93,7 +93,7 @@ class PyRouter:
         folium.Marker(self.closest_marker_coords, icon=folium.Icon(color='black'),
                       tooltip=f"Suggested pickup point: {self.closestROIs[0]}", ).add_to(m)
 
-        openMapForDebug('map.html', m)
+        openMapForDebug(f'html/{file_name}.html', m)
 
 @dataclass
 class GeoDriverRoute:
@@ -148,6 +148,10 @@ if __name__ == "__main__":
             marker = router.findClosestMarker(car_path)
 
             if router.isInRange():
+                match = RouteMatchEntity(passenger_route_id=geo_passenger.route_id,
+                                         driver_route_id = driver_route.route_id)
+                session.add(match)
+                session.commit()
                 router.getNearestROIs()
-                router.prepareHTMLmap(car_path)
+                router.prepareHTMLmap(car_path,file_name=match.id)
 
