@@ -35,7 +35,7 @@ passenger_route_router = APIRouter(
 
 
 @passenger_route_router.post("/to")
-def create_driver_route_to(route_data: PassengerRouteInput):
+def create_passenger_route_to(route_data: PassengerRouteInput):
     route_id = uuid.uuid4()
     route = RouteEntity(
         id=route_id,
@@ -44,23 +44,24 @@ def create_driver_route_to(route_data: PassengerRouteInput):
         longitude=route_data.startPoint.longitude,
         office_id=route_data.officeId,
         owner_id=route_data.userId)
-    driver_route = PassengerRouteEntity(date_from=datetime.now(),
-                                        date_to=datetime.now(),
-                                        max_distance=500,
-                                        route_id=route.id
-                                        )
-    passenger_routes[route_data.userId] = driver_route
+    passenger_route = PassengerRouteEntity(date_from=datetime.now(),
+                                           date_to=datetime.now(),
+                                           max_distance=500,
+                                           route_id=route.id
+                                           )
+    passenger_routes[route_data.userId] = passenger_route
     engine = create_engine(POSTGRE_CONNECTION)
     session_maker = sessionmaker(engine)
     session = session_maker()
     try:
         session.add(route)
         session.commit()
-        session.add(driver_route)
+        session.add(passenger_route)
         session.commit()
+        session.close()
         return JSONResponse(status_code=200, content={"routeId": f"{route_id}"})
     except Exception as e:
-        return JSONResponse(status_code=404, content="Not valid data, check if user exists")
+        return JSONResponse(status_code=404, content=f"Error {str(e)}")
 
 
 @passenger_route_router.get("/{passengerRouteId}", response_model=PassengerRoute)
@@ -97,11 +98,14 @@ def get_passenger_routes_by_user(userId: str):
     session_maker = sessionmaker(engine)
     session = session_maker()
     try:
-        filtered_entities = session.query(RouteEntity).filter(RouteEntity.owner_id == userId).all()
+        filtered_entities: PassengerRouteEntity = (session.query(PassengerRouteEntity)
+                                                   .join(PassengerRouteEntity.route)
+                                                   .filter(RouteEntity.owner_id == userId).all())
         filtered_entities = [{"passengerRouteId": str(entity.id),
-                              "startPoint": {"latitude": float(entity.latitude), "longitude": float(entity.longitude)},
-                              "endPoint": {"latitude": float(entity.office.latitude),
-                                           "longitude": float(entity.office.longitude)}} for entity in
+                              "startPoint": {"latitude": float(entity.route.latitude),
+                                             "longitude": float(entity.route.longitude)},
+                              "endPoint": {"latitude": float(entity.route.office.latitude),
+                                           "longitude": float(entity.route.office.longitude)}} for entity in
                              filtered_entities]
         session.close()
         return filtered_entities

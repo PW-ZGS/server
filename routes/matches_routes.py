@@ -24,13 +24,14 @@ def convert_route_match_to_match(route_match: RouteMatchEntity) -> Match:
     passenger_route = route_match.passenger_route
     driver_route = route_match.driver_route
 
-    contact = passenger_route.contact
-    name = passenger_route.user.name
+    contact = passenger_route.route.owner.contact
+    name = passenger_route.route.owner.name
 
     return Match(
-        passengerRouteId=route_match.passenger_route_id,
+        passengerRouteId=str(route_match.passenger_route_id),
         contact=contact,
         name=name,
+        link=f'http://18.199.107.206:30490/html/{str(route_match.id)}.html'
     )
 
 

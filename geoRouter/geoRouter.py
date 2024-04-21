@@ -93,7 +93,7 @@ class PyRouter:
         folium.Marker(self.closest_marker_coords, icon=folium.Icon(color='black'),
                       tooltip=f"Suggested pickup point: {self.closestROIs[0]}", ).add_to(m)
 
-        m.save(f'../html/{file_name}.html')
+        m.save(f'html/{file_name}.html')
 
 @dataclass
 class GeoDriverRoute:
@@ -114,7 +114,8 @@ class GeoPassengerRoute:
     max_distance: float
 
 
-if __name__ == "__main__":
+def schedule():
+    print('Matching ...')
     engine = create_engine(POSTGRE_CONNECTION)
     session_maker = sessionmaker(engine)
     session = session_maker()
@@ -164,3 +165,6 @@ if __name__ == "__main__":
                 router.prepareHTMLmap(car_path,file_name=match.id)
             else:
                 print("no match")
+
+if __name__ == "__main__":
+    schedule()
