@@ -53,7 +53,7 @@ def create_driver_route_to(route_data: RouteInput):
         content = {"routeId": str(route_id)}
         return JSONResponse(status_code=200, content=content)
     except Exception as e:
-        return JSONResponse(status_code=404, content="Not valid data, check if user exists")
+        return JSONResponse(status_code=404, content=f"Not valid data {e}")
 
 
 @driver_route.get("/by-users/{userId}", response_model=List[DriverRoute])
