@@ -93,7 +93,7 @@ class PyRouter:
         folium.Marker(self.closest_marker_coords, icon=folium.Icon(color='black'),
                       tooltip=f"Suggested pickup point: {self.closestROIs[0]}", ).add_to(m)
 
-        openMapForDebug(f'html/{file_name}.html', m)
+        m.save(f'../html/{file_name}.html')
 
 @dataclass
 class GeoDriverRoute:
@@ -148,10 +148,12 @@ if __name__ == "__main__":
             marker = router.findClosestMarker(car_path)
 
             if router.isInRange():
-                match = RouteMatchEntity(passenger_route_id=geo_passenger.route_id,
-                                         driver_route_id = driver_route.route_id)
+                print("match")
+                match = RouteMatchEntity(passenger_route_id=geo_passenger.passenger_id,
+                                         driver_route_id = driver_route.driver_id)
                 session.add(match)
                 session.commit()
                 router.getNearestROIs()
                 router.prepareHTMLmap(car_path,file_name=match.id)
-
+            else:
+                print("no match")
