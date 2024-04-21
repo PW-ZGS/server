@@ -1,10 +1,19 @@
 import webbrowser
+from dataclasses import dataclass
+
 import folium
 from routingpy import Valhalla
 from openrouteservice.client import Client
 from haversine import haversine, Unit
 from statistics import mean
 from math import inf
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+from common.credentials import POSTGRE_CONNECTION
+from common.models import PassengerRouteEntity, DriverRouteEntity, RouteEntity
+
 
 def openMapForDebug(path, map):
     html_page = f'{path}'
@@ -86,16 +95,52 @@ class PyRouter:
 
         openMapForDebug('map.html', m)
 
+@dataclass
+class GeoDriverRoute:
+    driver_id: str
+    route_id: str
+    latitude: float
+    longitude: float
+    office_latitude: float
+    office_longitude: float
+
+
+@dataclass
+class GeoPassengerRoute:
+    passenger_id: str
+    route_id: str
+    latitude: float
+    longitude: float
+    max_distance: float
+
 
 if __name__ == "__main__":
+    passenger_id = "b0e2eb8f-b2be-4266-947e-2757f21b62c3"
+    engine = create_engine(POSTGRE_CONNECTION)
+    session_maker = sessionmaker(engine)
+    session = session_maker()
+    passanger = [join_part for join_part in session.query(PassengerRouteEntity, RouteEntity).join(RouteEntity).filter(PassengerRouteEntity.id == passenger_id).first()]
+    geo_passenger = GeoPassengerRoute(passenger_id=str(passanger[0].id),
+                                      route_id=str(passanger[0].route_id),
+                                      latitude=float(passanger[1].latitude),
+                                      longitude=float(passanger[1].longitude),
+                                      max_distance=passanger[0].max_distance)
+    driver_routes = []
+    for single_join in session.query(DriverRouteEntity, RouteEntity).join(RouteEntity).filter(RouteEntity.office_id == passanger[1].office.id).all():
+        join = [join_part for join_part in single_join]
+        geo_driver = GeoDriverRoute(driver_id=str(join[0].id),
+                                       route_id=str(join[0].route_id),
+                                       latitude=float(join[1].latitude),
+                                       longitude=float(join[1].longitude),
+                                       office_latitude=join[1].office.latitude,
+                                       office_longitude=join[1].office.longitude)
+        driver_routes.append(geo_driver)
 
-    # test :D
-    destination = [52.23208696960101, 21.05542834618853]
-    all_drivers_startpoints = [[52.21719277179523, 20.977368674875603]]
-    passenger_start = [52.21015838034042, 21.02174343263609]
-    range = 950
-
-    for driver_start in all_drivers_startpoints:
+    for driver_route in driver_routes:
+        passenger_start = [float(geo_passenger.latitude),float(geo_passenger.longitude)]
+        driver_start = [float(driver_route.latitude), float(driver_route.longitude)]
+        range = geo_passenger.max_distance
+        destination = [float(driver_route.office_latitude),float(driver_route.office_longitude)]
         router = PyRouter(passenger_start, range, driver_start, destination)
         car_path = router.getRoute()
         marker = router.findClosestMarker(car_path)
