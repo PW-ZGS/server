@@ -8,7 +8,7 @@ from haversine import haversine, Unit
 from statistics import mean
 from math import inf
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker
 
 from common.credentials import POSTGRE_CONNECTION
@@ -120,6 +120,13 @@ if __name__ == "__main__":
     session = session_maker()
 
     passangers_results = session.query(PassengerRouteEntity, RouteEntity).join(RouteEntity).all()
+    metadata = MetaData()
+
+    metadata.reflect(bind=engine)
+    table_name = "match"
+    table = metadata.tables[table_name]
+    session.execute(table.delete())
+    session.commit()
     for passenger_result in passangers_results:
         passanger = [join_part for join_part in passenger_result]
         geo_passenger = GeoPassengerRoute(passenger_id=str(passanger[0].id),
@@ -141,7 +148,7 @@ if __name__ == "__main__":
         for driver_route in driver_routes:
             passenger_start = [float(geo_passenger.latitude),float(geo_passenger.longitude)]
             driver_start = [float(driver_route.latitude), float(driver_route.longitude)]
-            range = geo_passenger.max_distance
+            range = 3000
             destination = [float(driver_route.office_latitude),float(driver_route.office_longitude)]
             router = PyRouter(passenger_start, range, driver_start, destination)
             car_path = router.getRoute()
